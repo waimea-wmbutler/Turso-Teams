@@ -1,0 +1,93 @@
+{#=====================================================
+  Thing page
+  - Shows details of a single thing
+  - Has a delete link to remove it
+=====================================================#}
+
+{% extends 'pages/base.jinja' %}
+
+
+{% block title %}
+
+    Team Tracker 5000 - {{ team.name }}
+
+{% endblock %}
+
+
+{% block content %}
+
+    <h1>{{ team.name }}</h1>
+
+    <section class="team-info">
+
+        <article>
+
+            <img src="/image/{{ team.code }}" alt="{{ team.name }}">
+
+            <p>{{ team.description }}</p>
+
+            <p><a href="{{ team.website }}">{{ team.website }}</a></p>
+
+        </article>
+
+        <article>
+
+            <h3>Players</h3>
+
+            <ul>
+                {% for player in players %}
+
+                    <li>
+                        {{ player.name }}
+
+                        {% if player.notes %}
+                            - {{player.notes}}
+                        {% endif %}
+                    </li>
+
+                {% else %}
+
+                    <p>None!</p>
+
+                {% endfor %}
+            </ul>
+
+
+            <details>
+
+                <summary role="button">Add a New Player...</summary>
+
+                <form action="/add-player" method="POST">
+
+                    <input
+                        type="hidden"
+                        name="team"
+                        value="{{ team.code }}"
+                    >
+
+                    <input
+                        type="text"
+                        name="name"
+                        placeholder="Player name"
+                        required
+                    >
+
+                    <input
+                        type="text"
+                        name="notes"
+                        placeholder="Player notes"
+                    >
+
+                    <button>Add Player</button>
+
+                </form>
+
+            </details>
+
+        </article>
+
+    </section>
+
+
+{% endblock %}
+

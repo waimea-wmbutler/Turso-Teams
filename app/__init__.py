@@ -9,8 +9,8 @@ from app.helpers.session import init_session
 from app.helpers.db      import connect_db
 from app.helpers.errors  import init_error, server_error, not_found_error
 from app.helpers.logging import init_logging
-from app.helpers.images  import image_file
 from app.helpers.time    import init_datetime, utc_timestamp, utc_timestamp_now
+from app.helpers.images  import image_file
 
 
 # Create the app
@@ -28,49 +28,40 @@ init_datetime(app)  # Handle UTC dates in timestamps
 #-----------------------------------------------------------
 @app.get("/")
 def index():
-    return render_template("pages/home.jinja")
-
-
-#-----------------------------------------------------------
-# About page route
-#-----------------------------------------------------------
-@app.get("/about/")
-def about():
-    return render_template("pages/about.jinja")
-
-
-#-----------------------------------------------------------
-# Things page route - Show all the things, and new thing form
-#-----------------------------------------------------------
-@app.get("/things/")
-def show_all_things():
     with connect_db() as client:
-        # Get all the things from the DB
-        sql = "SELECT id, name FROM things ORDER BY name ASC"
+        # Get all the teams from the DB
+        sql = "SELECT code, name FROM teams ORDER BY name ASC"
         params = []
         result = client.execute(sql, params)
-        things = result.rows
+        teams = result.rows
 
         # And show them on the page
-        return render_template("pages/things.jinja", things=things)
+        return render_template("pages/home.jinja", teams=teams)
 
 
 #-----------------------------------------------------------
-# Thing page route - Show details of a single thing
+# Team page route - Show details of a single team
 #-----------------------------------------------------------
-@app.get("/thing/<int:id>")
-def show_one_thing(id):
+@app.get("/team/<code>")
+def show_team_details(code):
     with connect_db() as client:
-        # Get the thing details from the DB
-        sql = "SELECT id, name, price FROM things WHERE id=?"
-        params = [id]
+        # Get the team details from the DB
+        sql = "SELECT code, name, description, website FROM teams WHERE code=?"
+        params = [code]
         result = client.execute(sql, params)
 
         # Did we get a result?
         if result.rows:
-            # yes, so show it on the page
-            thing = result.rows[0]
-            return render_template("pages/thing.jinja", thing=thing)
+            # yes, so keep going
+            team = result.rows[0]
+
+            # Get the team players from the DB
+            sql = "SELECT name, notes FROM players WHERE team=?"
+            params = [code]
+            result = client.execute(sql, params)
+            players = result.rows
+
+            return render_template("pages/team.jinja", team=team, players=players)
 
         else:
             # No, so show error
@@ -78,16 +69,19 @@ def show_one_thing(id):
 
 
 #-----------------------------------------------------------
-# Route for adding a thing, using data posted from a form
+# Route for adding a team, using data posted from a form
 #-----------------------------------------------------------
 @app.post("/add")
-def add_a_thing():
+def add_a_team():
     # Get the data from the form
-    name  = request.form.get("name")
-    price = request.form.get("price")
+    code        = request.form.get("code")
+    name        = request.form.get("name")
+    description = request.form.get("description")
+    website     = request.form.get("website")
 
     # Sanitise the text inputs
     name = html.escape(name)
+    description = html.escape(description)
 
     # Get the uploaded image
     image_file = request.files['image']
@@ -99,40 +93,71 @@ def add_a_thing():
     mime_type = image_file.mimetype
 
     with connect_db() as client:
-        # Add the thing to the DB
-        sql = "INSERT INTO things (name, price, image_data, image_mime) VALUES (?, ?, ?, ?)"
-        params = [name, price, image_data, mime_type]
+        # Add the team to the DB
+        sql = """
+            INSERT INTO teams (code, name, description, website, image_data, image_mime)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """
+        params = [code, name, description, website, image_data, mime_type]
         client.execute(sql, params)
 
         # Go back to the home page
-        flash(f"Thing '{name}' added", "success")
+        flash(f"Team '{name}' added", "success")
+        return redirect("/")
+
+
+#-----------------------------------------------------------
+# Route for adding a team, using data posted from a form
+#-----------------------------------------------------------
+@app.post("/add-player")
+def add_a_player():
+    # Get the data from the form
+    team  = request.form.get("team")
+    name  = request.form.get("name")
+    notes = request.form.get("notes")
+
+    # Sanitise the text inputs
+    name  = html.escape(name)
+    notes = html.escape(notes)
+
+    with connect_db() as client:
+        # Add the player to the DB
+        sql = """
+            INSERT INTO players (name, notes, team)
+            VALUES (?, ?, ?)
+        """
+        params = [name, notes, team]
+        client.execute(sql, params)
+
+        # Go back to the home page
+        flash(f"Player '{name}' added", "success")
+        return redirect(f"/team/{team}")
+
+
+#-----------------------------------------------------------
+# Route for deleting a team, code given in the route
+#-----------------------------------------------------------
+@app.get("/delete/<code>")
+def delete_a_thing(code):
+    with connect_db() as client:
+        # Delete the team from the DB
+        sql = "DELETE FROM teams WHERE code=?"
+        params = [code]
+        client.execute(sql, params)
+
+        # Go back to the home page
+        flash("Team deleted", "success")
         return redirect("/things")
 
 
 #-----------------------------------------------------------
-# Route for deleting a thing, Id given in the route
+# Route for serving an image from DB for a given team
 #-----------------------------------------------------------
-@app.get("/delete/<int:id>")
-def delete_a_thing(id):
+@app.route('/image/<code>')
+def get_image(code):
     with connect_db() as client:
-        # Delete the thing from the DB
-        sql = "DELETE FROM things WHERE id=?"
-        params = [id]
-        client.execute(sql, params)
-
-        # Go back to the home page
-        flash("Thing deleted", "success")
-        return redirect("/things")
-
-
-#-----------------------------------------------------------
-# Route for serving an image from DB for a given thing
-#-----------------------------------------------------------
-@app.route('/image/<int:id>')
-def get_image(id):
-    with connect_db() as client:
-        sql = "SELECT image_data, image_mime FROM things WHERE id = ?"
-        params = [id]
+        sql = "SELECT image_data, image_mime FROM teams WHERE code = ?"
+        params = [code]
         result = client.execute(sql, params)
 
         return image_file(result, "image_data", "image_mime")

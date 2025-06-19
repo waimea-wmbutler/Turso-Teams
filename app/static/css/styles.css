@@ -3,24 +3,74 @@
 =====================================================*/
 
 
-/* THING PAGE -------------------------------------------- */
+h1 {
+    text-align: center;
+    margin-bottom: 3rem;
+}
 
-.thing img {
+form {
     max-width: 20rem;
-    margin-bottom: 1rem;
+    margin-inline: auto;
 }
 
 
-/* ABOUT PAGE -------------------------------------------- */
+/* TEAMS PAGE -------------------------------------------- */
 
-#tech-stack {
+.teams {
     display: flex;
-    gap: 1rem;
-    align-items: flex-start;
+    gap: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
-#tech-stack article {
-    flex: 1;
+.teams article {
+    width: 100%;
+    max-width: 12rem;
+    text-align: center;
+}
+
+.teams article a {
+    text-decoration: none;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.teams article img {
+    max-height: 10rem;
+    width: auto;
+}
+
+.new-team {
+    max-width: 20rem;
+    margin: 3rem auto;
+}
+
+
+/* TEAM PAGE -------------------------------------------- */
+
+.team-info {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.team-info article {
+    width: 100%;
+    max-width: 20rem;
+}
+
+.team-info article:first-child {
+    text-align: center;
+}
+
+.team-info article img {
+    width: 100%;
+    margin-bottom: 2rem;
 }
 
 
@@ -28,14 +78,14 @@
 
 #messages ul {
     width: fit-content;
-    margin: 2rem auto;
+    margin: 0;
     padding: 0;
 }
 
 #messages .message {
     list-style: none;
     text-align: center;
-    margin-bottom: 1rem;
+    margin-block: 0.5rem;
 }
 
 #messages .message.success { color: var(--pico-color-green-500); }
