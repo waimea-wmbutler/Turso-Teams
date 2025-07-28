@@ -30,7 +30,7 @@ init_datetime(app)  # Handle UTC dates in timestamps
 def index():
     with connect_db() as client:
         # Get all the teams from the DB
-        sql = "SELECT code, name FROM teams ORDER BY name ASC"
+        sql = "SELECT id, maker FROM Makes ORDER BY maker ASC"
         params = []
         result = client.execute(sql, params)
         teams = result.rows
@@ -42,12 +42,12 @@ def index():
 #-----------------------------------------------------------
 # Team page route - Show details of a single team
 #-----------------------------------------------------------
-@app.get("/team/<code>")
-def show_team_details(code):
+@app.get("/team/<id>")
+def show_team_details(id):
     with connect_db() as client:
         # Get the team details from the DB
-        sql = "SELECT code, name, description, website FROM teams WHERE code=?"
-        params = [code]
+        sql = "SELECT id, region, maker FROM Maker WHERE id=?"
+        params = [id]
         result = client.execute(sql, params)
 
         # Did we get a result?
@@ -56,12 +56,12 @@ def show_team_details(code):
             team = result.rows[0]
 
             # Get the team players from the DB
-            sql = "SELECT name, notes FROM players WHERE team=?"
-            params = [code]
+            sql = "SELECT model, price FROM Vehicles WHERE Makes=?"
+            params = [id]
             result = client.execute(sql, params)
             players = result.rows
 
-            return render_template("pages/team.jinja", team=team, players=players)
+            return render_template("pages/team.jinja", Makes=Makes, Vehicles=Vehicles)
 
         else:
             # No, so show error
@@ -72,37 +72,27 @@ def show_team_details(code):
 # Route for adding a team, using data posted from a form
 #-----------------------------------------------------------
 @app.post("/add")
-def add_a_team():
+def add_a_make():
     # Get the data from the form
-    code        = request.form.get("code")
-    name        = request.form.get("name")
-    description = request.form.get("description")
-    website     = request.form.get("website")
+    maker        = request.form.get("maker")
+    region = request.form.get("region")
 
     # Sanitise the text inputs
     name = html.escape(name)
     description = html.escape(description)
 
-    # Get the uploaded image
-    image_file = request.files['image']
-    if not image_file:
-        return server_error("Problem uploading image")
-
-    # Load the image data ready for the DB
-    image_data = image_file.read()
-    mime_type = image_file.mimetype
 
     with connect_db() as client:
         # Add the team to the DB
         sql = """
-            INSERT INTO teams (code, name, description, website, image_data, image_mime)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO Makes (maker, region)
+            VALUES (?, ?)
         """
-        params = [code, name, description, website, image_data, mime_type]
+        params = [maker, region]
         client.execute(sql, params)
 
         # Go back to the home page
-        flash(f"Team '{name}' added", "success")
+        flash(f"Maker '{name}' added", "success")
         return redirect("/")
 
 
@@ -110,27 +100,27 @@ def add_a_team():
 # Route for adding a team, using data posted from a form
 #-----------------------------------------------------------
 @app.post("/add-player")
-def add_a_player():
+def add_a_car():
     # Get the data from the form
-    team  = request.form.get("team")
-    name  = request.form.get("name")
-    notes = request.form.get("notes")
+
+    model  = request.form.get("model")
+    price = request.form.get("price")
 
     # Sanitise the text inputs
-    name  = html.escape(name)
-    notes = html.escape(notes)
+    model  = html.escape(name)
+    price = html.escape(notes)
 
     with connect_db() as client:
         # Add the player to the DB
         sql = """
-            INSERT INTO players (name, notes, team)
-            VALUES (?, ?, ?)
+            INSERT INTO players (model, price)
+            VALUES (?, ?)
         """
-        params = [name, notes, team]
+        params = [model, price]
         client.execute(sql, params)
 
         # Go back to the home page
-        flash(f"Player '{name}' added", "success")
+        flash(f"Vehicle '{name}' added", "success")
         return redirect(f"/team/{team}")
 
 
@@ -141,24 +131,10 @@ def add_a_player():
 def delete_a_thing(code):
     with connect_db() as client:
         # Delete the team from the DB
-        sql = "DELETE FROM teams WHERE code=?"
+        sql = "DELETE FROM make WHERE code=?"
         params = [code]
         client.execute(sql, params)
 
         # Go back to the home page
         flash("Team deleted", "success")
         return redirect("/things")
-
-
-#-----------------------------------------------------------
-# Route for serving an image from DB for a given team
-#-----------------------------------------------------------
-@app.route('/image/<code>')
-def get_image(code):
-    with connect_db() as client:
-        sql = "SELECT image_data, image_mime FROM teams WHERE code = ?"
-        params = [code]
-        result = client.execute(sql, params)
-
-        return image_file(result, "image_data", "image_mime")
-

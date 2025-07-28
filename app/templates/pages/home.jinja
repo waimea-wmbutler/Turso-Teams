@@ -7,24 +7,22 @@
 
 {% block title %}
 
-    Team Tracker 5000
+    Legandary Vehicles - Home
 
 {% endblock %}
 
 
 {% block content %}
 
-    <h1>Teams</h1>
+    <h1>Makes</h1>
 
-    <section class="teams">
+    <section class="makes">
 
-        {% for team in teams %}
+        {% for Makes in Makes %}
 
             <article>
-                <a href="/team/{{ team.code }}">
-                    <h2>{{ team.name }}</h2>
-
-                    <img src="/image/{{ team.code }}" alt="Logo for {{ team.name }}">
+                <a href="/Makes/{{ Makes.maker }}">
+                    <h2>{{ Makes.maker }}</h2>
                 </a>
             </article>
 
@@ -38,7 +36,7 @@
 
     <details class="new-team">
 
-        <summary role="button">Add a New Team...</summary>
+        <summary role="button">Add a New Maker...</summary>
 
         <article>
 
@@ -46,36 +44,15 @@
 
                 <input
                     type="text"
-                    name="code"
-                    placeholder="Team code"
+                    name="region"
+                    placeholder="Region"
                     required
                 >
 
                 <input
                     type="text"
                     name="name"
-                    placeholder="Team name"
-                    required
-                >
-
-                <input
-                    type="text"
-                    name="description"
-                    placeholder="Team description"
-                    required
-                >
-
-                <input
-                    type="url"
-                    name="website"
-                    placeholder="Team website"
-                    required
-                >
-
-                <input
-                    type="file"
-                    name="image"
-                    accept=".jpeg,.jpg,.png,.avif,.gif,.svg"
+                    placeholder="Maker"
                     required
                 >
 

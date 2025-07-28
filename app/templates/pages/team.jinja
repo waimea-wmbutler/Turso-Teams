@@ -9,39 +9,36 @@
 
 {% block title %}
 
-    Team Tracker 5000 - {{ team.name }}
+    Legandary Vehicles - {{ Makes.maker }}
 
 {% endblock %}
 
 
 {% block content %}
 
-    <h1>{{ team.name }}</h1>
+    <h1>{{ Makes.maker }}</h1>
 
     <section class="team-info">
 
         <article>
 
-            <img src="/image/{{ team.code }}" alt="{{ team.name }}">
-
-            <p>{{ team.description }}</p>
-
-            <p><a href="{{ team.website }}">{{ team.website }}</a></p>
+        <h2>{{ Makes.maker }}</h2>
+        <h3>{{ Makes.region }}</h3>
 
         </article>
 
         <article>
 
-            <h3>Players</h3>
+            <h3></h3>
 
             <ul>
-                {% for player in players %}
+                {% for vehicle in vehicles %}
 
                     <li>
-                        {{ player.name }}
+                        {{ vehicle.model }}
 
-                        {% if player.notes %}
-                            - {{player.notes}}
+                        {% if vehicle.price %}
+                            - {{vehicle.price}}
                         {% endif %}
                     </li>
 
@@ -55,30 +52,25 @@
 
             <details>
 
-                <summary role="button">Add a New Player...</summary>
+                <summary role="button">Add a New Vehicle...</summary>
 
                 <form action="/add-player" method="POST">
 
-                    <input
-                        type="hidden"
-                        name="team"
-                        value="{{ team.code }}"
-                    >
 
                     <input
                         type="text"
                         name="name"
-                        placeholder="Player name"
+                        placeholder="Vehicle model"
                         required
                     >
 
                     <input
-                        type="text"
-                        name="notes"
-                        placeholder="Player notes"
+                        type="int"
+                        name="price"
+                        placeholder="vehcile price"
                     >
 
-                    <button>Add Player</button>
+                    <button>Add Vehicle</button>
 
                 </form>
 
