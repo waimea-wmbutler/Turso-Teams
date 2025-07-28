@@ -78,8 +78,8 @@ def add_a_make():
     region = request.form.get("region")
 
     # Sanitise the text inputs
-    name = html.escape(name)
-    description = html.escape(description)
+    maker = html.escape(name)
+    region = html.escape(description)
 
 
     with connect_db() as client:
