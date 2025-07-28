@@ -78,8 +78,8 @@ def add_a_make():
     region = request.form.get("region")
 
     # Sanitise the text inputs
-    maker = html.escape(name)
-    region = html.escape(description)
+    maker = html.escape(maker)
+    region = html.escape(region)
 
 
     with connect_db() as client:
@@ -92,7 +92,7 @@ def add_a_make():
         client.execute(sql, params)
 
         # Go back to the home page
-        flash(f"Maker '{name}' added", "success")
+        flash(f"Maker '{maker}' added", "success")
         return redirect("/")
 
 
